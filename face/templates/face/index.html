@@ -1,0 +1,150 @@
+<!-- {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virtual Try-On — Face Accessories</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'face/css/styles.css' %}">
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">Try-On Lab</div>
+    <div class="links">
+      <a href="#" class="active">Home</a>
+      <a href="#about">About</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-text">
+      <h1>Virtual Accessory Try-On</h1>
+      <p>Enable your camera and see how <strong>glasses</strong>, <strong>hats</strong>, and <strong>earrings</strong> look on you — live and interactive.</p>
+      <div class="btn-group">
+        <button id="startBtn" class="btn-primary">Enable Camera</button>
+        <button id="resetBtn" class="btn-secondary">Reset Camera</button>
+        <button id="downloadBtn" class="btn-secondary">Download Snapshot</button>
+      </div>
+      <p class="hint">Video stays on your device. Nothing is uploaded.</p>
+    </div>
+    
+
+  </header>
+
+  <main class="main">
+    <section class="tryon">
+      <div class="stage">
+        <video id="inputVideo" playsinline></video>
+        <canvas id="outputCanvas"></canvas>
+        <div id="loading" class="loading">Loading Face Tracking…</div>
+        <div id="permission" class="permission">Please click “Enable Camera”.</div>
+      </div>
+
+      <aside class="sidebar">
+        <h3>Accessories</h3>
+        <div class="grid" id="accessoryGrid"></div>
+      </aside>
+    </section>
+
+    <section class="about" id="about">
+      <h2>About This Project</h2>
+      <p>This project is a <strong>virtual try-on demo</strong> built with <strong>Django</strong> and <strong>MediaPipe FaceMesh</strong>.</p>
+      <p>It lets you try on fun accessories like glasses, hats, and earrings in real-time. The face landmarks are tracked in your browser so the accessories move naturally with your head.</p>
+      <p>You can reset the camera anytime or download a snapshot of your look.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Try-On Lab</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+
+
+  <script>
+    window.APP_ACCESSORIES = [
+      { id: 'glasses1', label: 'Glasses 1', type: 'glasses', src: "{% static 'face/img/accessories/glasses1.png' %}" },
+      { id: 'glasses2', label: 'Glasses 2', type: 'glasses', src: "{% static 'face/img/accessories/glasses2.png' %}" },
+      { id: 'hat1',     label: 'Hat',       type: 'hat',     src: "{% static 'face/img/accessories/hat1.png' %}" },
+      // { id: 'ear1',     label: 'Earrings',  type: 'ear',     src: "{% static 'face/img/accessories/ear1.png' %}" },
+      
+    ];
+  </script>
+  <script src="{% static 'face/js/app.js' %}"></script>
+</body>
+</html> -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virtual Try-On — Face Accessories</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'face/css/styles.css' %}">
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">Try-On Lab</div>
+    <div class="links">
+      <a href="#" class="active">Home</a>
+      <a href="#about">About</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-text">
+      <h1>Virtual Accessory Try-On</h1>
+      <p>Enable your camera and see how <strong>glasses</strong>, <strong>hats</strong>, and <strong>earrings</strong> look on you — live and interactive.</p>
+      <div class="btn-group">
+        <button id="startBtn" class="btn-primary">Enable Camera</button>
+        <button id="resetBtn" class="btn-secondary">Reset Camera</button>
+        <button id="downloadBtn" class="btn-secondary">Download Snapshot</button>
+      </div>
+      <p class="hint">Video stays on your device. Nothing is uploaded.</p>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="tryon">
+      <div class="stage">
+        <video id="inputVideo" playsinline></video>
+        <canvas id="outputCanvas"></canvas>
+        <div id="loading" class="loading">Loading Face Tracking…</div>
+        <div id="permission" class="permission">Please click “Enable Camera”.</div>
+      </div>
+      <aside class="sidebar">
+        <h3>Accessories</h3>
+        <div class="grid" id="accessoryGrid"></div>
+      </aside>
+    </section>
+    <section class="about" id="about">
+      <h2>About This Project</h2>
+      <p>This project is a <strong>virtual try-on demo</strong> built with <strong>Django</strong> and <strong>MediaPipe FaceMesh</strong>.</p>
+      <p>It lets you try on fun accessories like glasses, hats, and earrings in real-time. The face landmarks are tracked in your browser so the accessories move naturally with your head.</p>
+      <p>You can reset the camera anytime or download a snapshot of your look.</p>
+    </section>
+  </main>
+  <footer class="footer">
+    <p>© <span id="year"></span> Try-On Lab</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+
+  <script>
+    window.APP_ACCESSORIES = [
+      { id: 'glasses1', label: 'Glasses 1', type: 'glasses', src: "{% static 'face/img/accessories/glasses1.png' %}" },
+      { id: 'glasses2', label: 'Glasses 2', type: 'glasses', src: "{% static 'face/img/accessories/glasses2.png' %}" },
+      { id: 'vlack_hat',     label: 'Hat',       type: 'hat',     src: "{% static 'face/img/accessories/black_hat.png' %}" },
+      // Uncomment for earrings
+      // { id: 'ear1',  label: 'Earrings',  type: 'ear',     src: "{% static 'face/img/accessories/ear1.png' %}" },
+    ];
+  </script>
+  <script src="{% static 'face/js/app.js' %}"></script>
+</body>
+</html>
