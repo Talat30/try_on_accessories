@@ -7,16 +7,80 @@
   <title>Virtual Try-On — Face Accessories</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'face/css/styles.css' %}">
+  <style>
+    /* ✅ About Popup Modal */
+    #aboutModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 12, 30, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      place-items: center;
+      z-index: 999;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .about-box {
+      background: rgba(25, 27, 55, 0.95);
+      border-radius: 18px;
+      padding: 30px 40px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      animation: popupZoom 0.3s ease;
+    }
+
+    .about-box h2 {
+      color: #a28bff;
+      margin-bottom: 10px;
+    }
+
+    .about-box p {
+      color: #c5c9ef;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .close-btn {
+      background: #7c5cff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all .2s ease;
+    }
+    .close-btn:hover {
+      background: #9b84ff;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes popupZoom {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
+
 <body>
+  <!-- 🌟 NAVIGATION -->
   <nav class="nav">
     <div class="brand">Try-On Lab</div>
     <div class="links">
       <a href="#" class="active">Home</a>
-      <a href="#about">About</a>
+      <a href="#about" id="aboutBtn">About</a>
     </div>
   </nav>
 
+  <!-- 🌟 HERO SECTION -->
   <header class="hero">
     <div class="hero-text">
       <h1>Virtual Accessory Try-On</h1>
@@ -30,6 +94,7 @@
     </div>
   </header>
 
+  <!-- 🌟 MAIN CONTENT -->
   <main class="main">
     <section class="tryon">
       <div class="stage">
@@ -38,79 +103,75 @@
         <div id="loading" class="loading">Loading Face Tracking…</div>
         <div id="permission" class="permission">Please click “Enable Camera”.</div>
       </div>
-      <aside class="sidebar">
-        <h3>Accessories</h3>
-        <div class="grid" id="accessoryGrid"></div>
 
-        <!-- 🔽 Filters Section -->
+      <!-- 🌟 SIDEBAR: Accessories + Filters side-by-side -->
+      <aside class="sidebar">
+        <div class="accessory-section">
+          <h3>Accessories</h3>
+          <div class="grid" id="accessoryGrid"></div>
+        </div>
+
         <div class="filters">
           <h3>Filters</h3>
           <div class="filter-buttons">
-            <button class="filter-btn" onclick="applyFilter('none')">None</button>
-            <button class="filter-btn" onclick="applyFilter('grayscale')">Grayscale</button>
-            <button class="filter-btn" onclick="applyFilter('sepia')">Sepia</button>
-            <button class="filter-btn" onclick="applyFilter('invert')">Invert</button>
-            <button class="filter-btn" onclick="applyFilter('edge')">Edge Detection</button>
+            <button class="filter-btn" data-filter="none" onclick="applyFilter('none')"><span>None</span></button>
+            <button class="filter-btn" data-filter="grayscale" onclick="applyFilter('grayscale')"><span>Grayscale</span></button>
+            <button class="filter-btn" data-filter="sepia" onclick="applyFilter('sepia')"><span>Sepia</span></button>
+            <button class="filter-btn" data-filter="invert" onclick="applyFilter('invert')"><span>Invert</span></button>
+            <button class="filter-btn" data-filter="edge" onclick="applyFilter('edge')"><span>Edge</span></button>
           </div>
         </div>
-        <!-- 🔼 End Filters Section -->
       </aside>
     </section>
-    <div id="aboutModal">
-  <div class="about-box">
-    <h2>About This Project</h2>
-    <p>This virtual try-on lab is built using <strong>Django</strong> and <strong>MediaPipe FaceMesh</strong>, enabling real-time accessory fitting and fun camera effects — directly in your browser.</p>
-    <p>All processing is done locally — your camera feed never leaves your device.</p>
-    <button class="close-btn" onclick="toggleAbout(false)">Close</button>
-  </div>
-</div>
+  </main>
 
-
-    <!-- <section class="about" id="about">
+  <!-- 🌟 ABOUT MODAL POPUP -->
+  <div id="aboutModal">
+    <div class="about-box">
       <h2>About This Project</h2>
-      <p>This project is a <strong>virtual try-on demo</strong> built with <strong>Django</strong> and <strong>MediaPipe FaceMesh</strong>.</p>
-      <p>It lets you try on fun accessories like glasses, hats, and earrings in real-time. The face landmarks are tracked in your browser so the accessories move naturally with your head.</p>
-      <p>You can reset the camera anytime or download a snapshot of your look.</p>
-    </section>
-  </main> -->
+      <p>This virtual try-on lab is built using <strong>Django</strong> and <strong>MediaPipe FaceMesh</strong>, enabling real-time accessory fitting and fun camera effects — directly in your browser.</p>
+      <p>All processing is done locally — your camera feed never leaves your device.</p>
+      <button class="close-btn" onclick="toggleAbout(false)">Close</button>
+    </div>
+  </div>
 
+  <!-- 🌟 FOOTER -->
   <footer class="footer">
     <p>© <span id="year"></span> Try-On Lab</p>
   </footer>
 
-  <!-- MediaPipe Scripts -->
+  <!-- 🌟 MEDIAPIPE SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+  <!-- 🌟 ABOUT POPUP LOGIC -->
   <script>
-  function toggleAbout(show) {
-    document.getElementById('aboutModal').style.display = show ? 'grid' : 'none';
-  }
+    function toggleAbout(show) {
+      document.getElementById('aboutModal').style.display = show ? 'grid' : 'none';
+    }
 
-  // Attach About button click
-  document.querySelector('.links a[href="#about"]').addEventListener('click', (e) => {
-    e.preventDefault();
-    toggleAbout(true);
-  });
-</script>
+    document.getElementById('aboutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleAbout(true);
+    });
 
+    document.getElementById('aboutModal').addEventListener('click', (e) => {
+      if (e.target.id === 'aboutModal') toggleAbout(false);
+    });
+  </script>
 
-  <!-- Accessories Config -->
+  <!-- 🌟 ACCESSORY CONFIG -->
   <script>
     window.APP_ACCESSORIES = [
-      // 🔽 Added "None" Option (First Item)
       { id: 'none', label: 'None', type: 'none', src: "" },
-
       { id: 'glasses1', label: 'Glasses 1', type: 'glasses', src: "{% static 'face/img/accessories/glasses1.png' %}" },
       { id: 'glasses2', label: 'Glasses 2', type: 'glasses', src: "{% static 'face/img/accessories/glasses2.png' %}" },
-      { id: 'black_hat', label: 'Hat', type: 'hat', src: "{% static 'face/img/accessories/black_hat.png' %}" },
-      { id: 'watch', label: 'Watch', type: 'watch', src: "{% static 'face/img/accessories/watch.png' %}" },
-      // Uncomment for earrings
-      // { id: 'ear1', label: 'Earrings', type: 'ear', src: "{% static 'face/img/accessories/ear1.png' %}" },
+      { id: 'black_hat', label: 'Hat', type: 'hat', src: "{% static 'face/img/accessories/black_hat.png' %}" }
     ];
   </script>
 
+  <!-- 🌟 MAIN APP JS -->
   <script src="{% static 'face/js/app.js' %}"></script>
 </body>
 </html>
