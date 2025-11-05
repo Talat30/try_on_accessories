@@ -91,20 +91,81 @@ function onResults(results) {
   }
   drawFrame(results.multiFaceLandmarks[0]);
 }
-
 function drawFrame(landmarks) {
   loadingEl.style.display = 'none';
   const vw = video.videoWidth || 640;
   const vh = video.videoHeight || 480;
-  if (canvas.width !== vw || canvas.height !== vh) {
-    canvas.width = vw; canvas.height = vh;
-  }
-  ctx.save();
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+  // Resize canvas if needed
+  if (canvas.width !== vw || canvas.height !== vh) {
+    canvas.width = vw;
+    canvas.height = vh;
+  }
+
+  // 🟣 Create a hidden offscreen canvas for filtering
+  const bufferCanvas = document.createElement('canvas');
+  bufferCanvas.width = vw;
+  bufferCanvas.height = vh;
+  const bctx = bufferCanvas.getContext('2d');
+
+  // Draw the current video frame into the buffer
+  bctx.drawImage(video, 0, 0, vw, vh);
+
+  // Apply filters on the pixel data (CPU side)
+  if (currentFilter !== 'none') {
+    const frame = bctx.getImageData(0, 0, vw, vh);
+    const d = frame.data;
+
+    if (currentFilter === 'grayscale') {
+      for (let i = 0; i < d.length; i += 4) {
+        const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
+        d[i] = d[i + 1] = d[i + 2] = avg;
+      }
+    } else if (currentFilter === 'sepia') {
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        d[i] = 0.393 * r + 0.769 * g + 0.189 * b;
+        d[i + 1] = 0.349 * r + 0.686 * g + 0.168 * b;
+        d[i + 2] = 0.272 * r + 0.534 * g + 0.131 * b;
+      }
+    } else if (currentFilter === 'invert') {
+      for (let i = 0; i < d.length; i += 4) {
+        d[i] = 255 - d[i];
+        d[i + 1] = 255 - d[i + 1];
+        d[i + 2] = 255 - d[i + 2];
+      }
+    } else if (currentFilter === 'edge') {
+      // Very simple Sobel-like edge detection
+      const gray = new Uint8ClampedArray(d.length / 4);
+      for (let i = 0; i < d.length; i += 4) {
+        gray[i / 4] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      }
+      for (let y = 1; y < vh - 1; y++) {
+        for (let x = 1; x < vw - 1; x++) {
+          const i = y * vw + x;
+          const gx = gray[i - 1] - gray[i + 1];
+          const gy = gray[i - vw] - gray[i + vw];
+          const mag = Math.sqrt(gx * gx + gy * gy);
+          const val = mag > 30 ? 255 : 0;
+          d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = val;
+        }
+      }
+    }
+
+    bctx.putImageData(frame, 0, 0);
+  }
+
+  // Draw the filtered buffer onto the main canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bufferCanvas, 0, 0);
+
+  // Draw accessories (always on top)
   if (landmarks && current) {
-    const toPx = (i) => ({ x: landmarks[i].x * canvas.width, y: landmarks[i].y * canvas.height });
+    const toPx = (i) => ({
+      x: landmarks[i].x * canvas.width,
+      y: landmarks[i].y * canvas.height,
+    });
+
     if (current.meta.type === 'glasses') {
       const L = toPx(33), R = toPx(263), N = toPx(168);
       drawAccessoryBetween(L, R, N, current.img, 1.4, 0.55);
@@ -116,13 +177,24 @@ function drawFrame(landmarks) {
       drawEarrings(L, R, current.img);
     }
   }
-
-  // 🔽 Apply Selected Filter
-  applyCurrentFilter();
-  // 🔼 End Filter
-
-  ctx.restore();
 }
+
+function getCanvasFilter() {
+  switch (currentFilter) {
+    case 'grayscale':
+      return 'grayscale(1)';
+    case 'sepia':
+      return 'sepia(1)';
+    case 'invert':
+      return 'invert(1)';
+    case 'edge':
+      // For edge detection we’ll use brightness reduction + contrast to simulate
+      return 'contrast(3) brightness(0.6)';
+    default:
+      return 'none';
+  }
+}
+
 
 function drawAccessoryBetween(L, R, N, img, scaleX = 1.4, scaleY = 0.5) {
   const dx = R.x - L.x, dy = R.y - L.y;
