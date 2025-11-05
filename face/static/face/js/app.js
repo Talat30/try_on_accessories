@@ -116,6 +116,11 @@ function drawFrame(landmarks) {
       drawEarrings(L, R, current.img);
     }
   }
+
+  // 🔽 Apply Selected Filter
+  applyCurrentFilter();
+  // 🔼 End Filter
+
   ctx.restore();
 }
 
@@ -134,62 +139,22 @@ function drawAccessoryBetween(L, R, N, img, scaleX = 1.4, scaleY = 0.5) {
   ctx.setTransform(1,0,0,1,0,0);
 }
 
-// function drawHat(F, L, R, img) {
-//   const dx = R.x - L.x, dy = R.y - L.y;
-//   const earDist = Math.hypot(dx, dy);
-//   const angle = Math.atan2(dy, dx);
-//   const cx = (L.x + R.x) / 2;
-//   const hatWidth = earDist * 1.5;
-//   const hatHeight = hatWidth * 0.7;
-//   const x = cx;
-//   const y = F.y - hatHeight * 0.9;
-//   ctx.translate(x, y);
-//   ctx.rotate(angle);
-//   ctx.drawImage(img, -hatWidth/2, -hatHeight, hatWidth, hatHeight);
-//   ctx.setTransform(1,0,0,1,0,0);
-// }
-// function drawHat(F, L, R, img) {
-//   const dx = R.x - L.x, dy = R.y - L.y;
-//   const baseWidth = Math.hypot(dx, dy); // width between left and right temple
-//   const angle = Math.atan2(dy, dx);
-//   const centerX = (L.x + R.x) / 2;
-
-//   // These ratios make the hat fit most faces and sit naturally atop the forehead landmark.
-//   const hatWidth = baseWidth * 1.2;    // slightly wider than head
-//   const hatHeight = hatWidth * 0.65;   // proportional height
-//   const yOffset = hatHeight * 0.45;    // vertical offset above forehead, adjust if needed
-
-//   const x = centerX;                   // center horizontally
-//   const y = F.y - yOffset;             // position just above forehead (landmark 10)
-
-//   ctx.save();
-//   ctx.translate(x, y);
-//   ctx.rotate(angle);
-//   ctx.drawImage(img, -hatWidth/2, -hatHeight, hatWidth, hatHeight);
-//   ctx.restore();
-// }
 function drawHat(F, L, R, img) {
   const dx = R.x - L.x, dy = R.y - L.y;
   const baseWidth = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx);
   const centerX = (L.x + R.x) / 2;
 
-  // Precise scaling: width covers ear to ear, height proportional for top hats
   const hatWidth = baseWidth * 1.18;
   const hatHeight = hatWidth * 0.9;
-
-  // Place the brim exactly at the top head point (landmark 10)
   const y = F.y;
 
   ctx.save();
   ctx.translate(centerX, y);
   ctx.rotate(angle);
-  // The brim is at y = F.y; so draw the hat upward from there
   ctx.drawImage(img, -hatWidth/2, -hatHeight, hatWidth, hatHeight);
   ctx.restore();
 }
-
-
 
 function drawEarrings(L, R, img) {
   const size = 40;
@@ -201,3 +166,62 @@ function drawEarrings(L, R, img) {
     ctx.restore();
   });
 }
+
+// ===================================================
+// 🔽 FILTER SECTION ADDED
+// ===================================================
+
+let currentFilter = 'none';
+
+function applyFilter(name) {
+  currentFilter = name;
+}
+
+function applyCurrentFilter() {
+  if (currentFilter === 'none') return;
+
+  const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = frame.data;
+
+  if (currentFilter === 'grayscale') {
+    for (let i = 0; i < d.length; i += 4) {
+      const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
+      d[i] = d[i + 1] = d[i + 2] = avg;
+    }
+  } else if (currentFilter === 'sepia') {
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      d[i] = 0.393*r + 0.769*g + 0.189*b;
+      d[i + 1] = 0.349*r + 0.686*g + 0.168*b;
+      d[i + 2] = 0.272*r + 0.534*g + 0.131*b;
+    }
+  } else if (currentFilter === 'invert') {
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = 255 - d[i];
+      d[i + 1] = 255 - d[i + 1];
+      d[i + 2] = 255 - d[i + 2];
+    }
+  } else if (currentFilter === 'edge') {
+    // Simple edge detection using brightness threshold
+    const gray = new Uint8ClampedArray(d.length / 4);
+    for (let i = 0; i < d.length; i += 4) {
+      gray[i / 4] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    }
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const i = y * canvas.width + x;
+        if (x === 0 || y === 0 || x === canvas.width - 1 || y === canvas.height - 1) continue;
+        const gx = gray[i - 1] - gray[i + 1];
+        const gy = gray[i - canvas.width] - gray[i + canvas.width];
+        const mag = Math.sqrt(gx * gx + gy * gy);
+        const val = mag > 40 ? 255 : 0;
+        d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = val;
+      }
+    }
+  }
+
+  ctx.putImageData(frame, 0, 0);
+}
+// ===================================================
+// 🔼 END FILTER SECTION
+// ===================================================
